@@ -42,7 +42,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());
     }
 
@@ -62,6 +62,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler((request, response, authentication) -> {
                     CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
                     userService.processOAuthPostLogin(oauthUser.getName(), oauthUser.getEmail());
+
+//                    UserDetails userDetails = userDetailsService().loadUserByUsername(oauthUser.getEmail());
+//
+//                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
                     response.sendRedirect("/auth/welcome");
                 });
     }
