@@ -1,19 +1,23 @@
 package com.example.springbootoauth2starter.config;
 
 import com.example.springbootoauth2starter.security.CustomOAuth2User;
+import com.example.springbootoauth2starter.security.CustomOAuth2UserService;
 import com.example.springbootoauth2starter.security.UserDetailsServiceImpl;
-import com.example.springbootoauth2starter.services.CustomOAuth2UserService;
 import com.example.springbootoauth2starter.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 @Configuration
 @EnableWebSecurity
@@ -61,14 +65,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .successHandler((request, response, authentication) -> {
                     CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
-                    userService.processOAuthPostLogin(oauthUser.getName(), oauthUser.getEmail());
+                    String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
 
-//                    UserDetails userDetails = userDetailsService().loadUserByUsername(oauthUser.getEmail());
-//
-//                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    userService.processOAuthPostLogin(oauthUser, registrationId);
 
-                    response.sendRedirect("/auth/welcome");
+                    UserDetails userDetails = userDetailsService().loadUserByUsername(oauthUser.getEmail());
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+                    response.sendRedirect("/book");
                 });
     }
 

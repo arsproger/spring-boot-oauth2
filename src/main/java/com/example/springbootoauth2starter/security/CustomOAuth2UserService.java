@@ -1,6 +1,5 @@
-package com.example.springbootoauth2starter.services;
+package com.example.springbootoauth2starter.security;
 
-import com.example.springbootoauth2starter.security.CustomOAuth2User;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -12,8 +11,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService  {
  
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User user =  super.loadUser(userRequest);
-        return new CustomOAuth2User(user);
+        OAuth2User user = super.loadUser(userRequest);
+        String clientName = userRequest.getClientRegistration().getClientName();
+        return new CustomOAuth2User(user, clientName);
     }
  
 }
